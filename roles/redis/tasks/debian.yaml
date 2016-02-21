@@ -1,0 +1,16 @@
+- name: install redis server
+  apt: name={{item}} state=present
+  with_items:
+    - redis-server
+    - redis-tools
+
+- name: set listen address
+  lineinfile: >
+    dest=/etc/redis/redis.conf
+    regexp="^bind"
+    line="bind {{ansible_all_ipv4_addresses[0]}}"
+  notify:
+    - restart redis
+
+- name: start redis service
+  service: name=redis-server state=started enabled=yes

@@ -6,3 +6,7 @@
 - hosts: postgres
   roles:
   - pgdatabase
+
+- hosts: redis-cache
+  roles:
+  - redis
