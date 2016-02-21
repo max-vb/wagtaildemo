@@ -1,0 +1,5 @@
+- name: install uwsgi
+  apt: name={{ item }} state=present
+  with_items:
+    - uwsgi
+    - uwsgi-plugin-python
