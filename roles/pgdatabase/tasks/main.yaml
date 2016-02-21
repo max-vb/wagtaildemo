@@ -23,5 +23,3 @@
     mode=0640
   notify:
     - restart postgresql
-    - create wagtail database
-    - create wagtail user

@@ -16,7 +16,7 @@
      'default': {
          'BACKEND': 'redis_cache.cache.RedisCache',
 -        'LOCATION': '127.0.0.1:6379',
-+        'LOCATION': '{{IP_REDIS_HOST}}:6379',
++        'LOCATION': 'redis://:{{WT_PASSWD}}@{{IP_REDIS_HOST}}:6379/0',
          'KEY_PREFIX': 'wagtaildemo',
          'OPTIONS': {
              'CLIENT_CLASS': 'redis_cache.client.DefaultClient',

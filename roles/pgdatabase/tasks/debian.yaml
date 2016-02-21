@@ -15,6 +15,7 @@
   with_items:
     - postgresql-{{PG_VERSION}}
     - postgresql-client-{{PG_VERSION}}
+    - python-psycopg2
 
 - name: start and enable postgres database
   service: name=postgresql state=started enabled=yes
