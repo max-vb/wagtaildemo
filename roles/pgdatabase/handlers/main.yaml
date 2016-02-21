@@ -3,6 +3,11 @@
 
 - name: create wagtail database
   postgresql_db: name={{PROJ_NAME}}
+  become: yes
+  become_user: postgres
+  environment:
+    - PGUSER: postgres
+    - PGHOST: /var/run/postgresql
 
 - name: create wagtail user
   postgresql_user: >
@@ -10,3 +15,8 @@
     name="{{WT_USER}}"
     password="{{WT_PASSWD}}"
     priv=CONNECT,ALL
+  become: yes
+  become_user: postgres
+  environment:
+    - PGUSER: postgres
+    - PGHOST: /var/run/postgresql

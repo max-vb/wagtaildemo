@@ -24,3 +24,4 @@
   notify:
     - restart postgresql
     - create wagtail database
+    - create wagtail user

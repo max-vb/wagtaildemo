@@ -3,6 +3,6 @@ WT_USER: wagtail
 WT_UID: 36601
 WT_GROUP: wagtail
 WT_GID: 36601
-WT_HOMEDIR: /opt/wagtail
+WT_HOME: /opt/wagtail
 WT_GROUPS: "www-data"
 WT_PASSWD: wagtail

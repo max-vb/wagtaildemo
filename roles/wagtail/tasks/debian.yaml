@@ -14,7 +14,7 @@
     - python-pymongo
 
 - name: create wagtail group
-  group: name={{WT_GROUP}} gid={{WT_GID}} state=present
+  group: "name={{WT_GROUP}} gid={{WT_GID}} state=present"
 
 - name: create wagtail user
   user: >
@@ -22,6 +22,7 @@
     uid="{{WT_UID}}"
     group="{{WT_GROUP}}"
     groups="{{WT_GROUPS}}"
+    home="{{WT_HOME}}"
     state=present
     shell=/bin/bash
 
@@ -29,9 +30,14 @@
   git: >
     repo=https://github.com/torchbox/wagtaildemo
     clone=yes
-    dest="{{WT_HOMEDIR}}/{{PROJ_NAME}}"
+    dest="{{WT_HOME}}/{{PROJ_NAME}}"
     force=no
   register: result_clone_wagtaildemo
   become: yes
   become_user: "{{WT_USER}}"
   ignore_errors: yes
+
+- name: install dependencies
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && pip install -r requirements.txt"
+  register: result_install_dependencies
+  changed_when: result_install_dependencies.stdout.find('Requirement already satisfied') == -1
