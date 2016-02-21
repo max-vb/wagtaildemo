@@ -4,3 +4,5 @@ pgdb01 ansible_host=192.168.122.41 ansible_port=22
 pgdb01 ansible_host=192.168.122.41 ansible_port=22
 [es]
 pgdb01 ansible_host=192.168.122.41 ansible_port=22
+[wagtail-fe]
+pgdb01 ansible_host=192.168.122.41 ansible_port=22

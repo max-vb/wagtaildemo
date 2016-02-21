@@ -1,16 +1,21 @@
 ---
 - hosts: all
   roles:
-  - common
+    - common
 
 - hosts: postgres
   roles:
-  - pgdatabase
+    - pgdatabase
 
 - hosts: redis-cache
   roles:
-  - redis
+    - redis
 
 - hosts: es
   roles:
-  - es
+    - es
+
+- hosts: wagtail-fe
+  roles:
+    - uwsgi
+    - wagtail

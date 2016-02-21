@@ -1,0 +1,37 @@
+- name: install prerequest packages
+  apt: name={{item}} state=present
+  with_items:
+    - python-pip
+    - python-dev
+    - build-essential
+    - autoconf
+    - libtool
+    - zlib1g-dev
+    - libjpeg-dev
+    - python-psycopg2
+    - postgresql-server-dev-9.5
+    - git
+    - python-pymongo
+
+- name: create wagtail group
+  group: name={{WT_GROUP}} gid={{WT_GID}} state=present
+
+- name: create wagtail user
+  user: >
+    name="{{WT_USER}}"
+    uid="{{WT_UID}}"
+    group="{{WT_GROUP}}"
+    groups="{{WT_GROUPS}}"
+    state=present
+    shell=/bin/bash
+
+- name: clone wagtaildemo
+  git: >
+    repo=https://github.com/torchbox/wagtaildemo
+    clone=yes
+    dest="{{WT_HOMEDIR}}/{{PROJ_NAME}}"
+    force=no
+  register: result_clone_wagtaildemo
+  become: yes
+  become_user: "{{WT_USER}}"
+  ignore_errors: yes

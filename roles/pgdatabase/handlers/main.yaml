@@ -1,2 +1,12 @@
 - name: restart postgresql
   service: name=postgresql state=restarted enabled=yes
+
+- name: create wagtail database
+  postgresql_db: name={{PROJ_NAME}}
+
+- name: create wagtail user
+  postgresql_user: >
+    db="{{PROJ_NAME}}"
+    name="{{WT_USER}}"
+    password="{{WT_PASSWD}}"
+    priv=CONNECT,ALL
