@@ -1,0 +1,169 @@
+data_directory = '{{PG_DATA}}'
+hba_file = '{{PG_DATA}}/pg_hba.conf'
+ident_file = '{{PG_DATA}}/pg_ident.conf'
+
+#------------------------------------------------------------------------------
+# CONNECTIONS AND AUTHENTICATION
+#------------------------------------------------------------------------------
+
+listen_addresses = '*'
+port = 5432
+max_connections = 100
+superuser_reserved_connections = 5
+unix_socket_directories = '/var/run/postgresql'
+unix_socket_group = 'postgres'
+unix_socket_permissions = 0777
+
+# - Security and Authentication -
+
+authentication_timeout = 1min
+ssl = off
+password_encryption = on
+db_user_namespace = off
+
+# - TCP Keepalives -
+
+tcp_keepalives_idle = 60
+tcp_keepalives_interval = 30
+tcp_keepalives_count = 2
+
+
+#------------------------------------------------------------------------------
+# RESOURCE USAGE (except WAL)
+#------------------------------------------------------------------------------
+
+# - Memory -
+{% if ansible_memtotal_mb < 8192 %}
+shared_buffers = {{ (ansible_memtotal_mb*0.2)|int }}MB
+{% else %}
+shared_buffers = {{ (ansible_memtotal_mb*0.75)|int }}MB
+{% endif %}
+
+
+temp_buffers = 16MB
+work_mem = 4MB
+{% if ansible_memtotal_mb < 8192 %}
+maintenance_work_mem = {{ (ansible_memtotal_mb*0.05)|int }}MB
+{% else %}
+maintenance_work_mem = {{ (ansible_memtotal_mb*0.01)|int }}MB
+{% endif %}
+max_stack_depth = 2MB
+
+# - Kernel Resource Usage -
+
+max_files_per_process = 10000
+
+# - Cost-Based Vacuum Delay -
+
+vacuum_cost_delay = 0ms
+vacuum_cost_page_hit = 1
+vacuum_cost_page_miss = 10
+vacuum_cost_page_dirty = 20
+vacuum_cost_limit = 200
+
+# - Background Writer -
+
+bgwriter_delay = 200ms			# 10-10000ms between rounds
+bgwriter_lru_maxpages = 100		# 0-1000 max buffers written/round
+bgwriter_lru_multiplier = 2.0		# 0-10.0 multipler on buffers scanned/round
+
+# - Asynchronous Behavior -
+
+effective_io_concurrency = 8		# 1-1000. 0 disables prefetching
+
+
+#------------------------------------------------------------------------------
+# WRITE AHEAD LOG
+#------------------------------------------------------------------------------
+
+# - Settings -
+
+fsync = on
+synchronous_commit = off
+wal_sync_method = open_datasync
+
+full_page_writes = on
+wal_buffers = -1
+wal_writer_delay = 50ms
+
+# - Checkpoints -
+
+min_wal_size = 64MB
+max_wal_size = 128MB
+checkpoint_timeout = 5min
+checkpoint_completion_target = 0.5
+checkpoint_warning = 30s
+
+#------------------------------------------------------------------------------
+# QUERY TUNING
+#------------------------------------------------------------------------------
+
+# - Planner Method Configuration -
+
+enable_bitmapscan = on
+enable_hashagg = on
+enable_hashjoin = on
+enable_indexscan = on
+enable_mergejoin = on
+enable_nestloop = on
+enable_seqscan = on
+enable_sort = on
+enable_tidscan = on
+
+
+#------------------------------------------------------------------------------
+# ERROR REPORTING AND LOGGING
+#------------------------------------------------------------------------------
+
+log_destination = 'stderr'
+logging_collector = on
+log_directory = 'pg_log'
+log_filename = 'postgresql-%Y-%m-%d_%H%M%S.log'
+
+log_truncate_on_rotation = on
+log_rotation_age = 1d
+log_rotation_size = 10MB
+
+# - When to Log -
+client_min_messages = notice
+log_min_messages = warning
+log_error_verbosity = default
+log_min_error_statement = error
+
+# - What to Log -
+
+log_checkpoints = on
+log_lock_waits = on
+log_statement = 'ddl'
+# log_temp_files = -1
+					# than the specified size in kilobytes;
+					# -1 disables, 0 logs all temp files
+
+#------------------------------------------------------------------------------
+# AUTOVACUUM PARAMETERS
+#------------------------------------------------------------------------------
+
+autovacuum = on
+log_autovacuum_min_duration = -1	#
+
+{% if ansible_processor_vcpus == 1 %}
+autovacuum_max_workers = 1
+{% elif ansible_processor_vcpus <= 21 %}
+autovacuum_max_workers = {{ (ansible_processor_vcpus*0.4 + 1)|int }}
+{% else %}
+autovacuum_max_workers = {{ (ansible_processor_vcpus*0.35 + 1)|int }}
+{% endif %}
+
+autovacuum_naptime = 1min
+autovacuum_vacuum_threshold = 50
+autovacuum_analyze_threshold = 50
+autovacuum_vacuum_scale_factor = 0.2
+autovacuum_analyze_scale_factor = 0.1
+autovacuum_freeze_max_age = 200000000
+autovacuum_vacuum_cost_delay = 20ms
+autovacuum_vacuum_cost_limit = -1
+
+# - Locale and Formatting -
+
+datestyle = 'iso, mdy'
+intervalstyle = 'postgres'

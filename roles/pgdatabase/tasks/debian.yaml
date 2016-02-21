@@ -1,0 +1,23 @@
+- name: enable external postgres repository
+  lineinfile: >
+    dest=/etc/apt/sources.list.d/postgres.list
+    line="{{PG_REPOURL}}"
+    create=yes
+    owner=root
+    group=root
+    mode=0644
+
+- name: import pgp_key for postgres repository
+  apt_key: url={{PG_REPOKEY}}
+
+- name: install postgresql database
+  apt: name={{ item }} state=present update_cache=yes
+  with_items:
+    - postgresql-{{PG_VERSION}}
+    - postgresql-client-{{PG_VERSION}}
+
+- name: start and enable postgres database
+  service: name=postgresql state=started enabled=yes
+
+- name: define PG_DATA
+  set_fact: PG_DATA=/var/lib/postgresql/9.5/main

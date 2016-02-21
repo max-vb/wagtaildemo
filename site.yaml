@@ -1,0 +1,8 @@
+---
+- hosts: all
+  roles:
+  - common
+
+- hosts: postgres
+  roles:
+  - pgdatabase
