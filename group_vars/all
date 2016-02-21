@@ -5,4 +5,4 @@ WT_GROUP: wagtail
 WT_GID: 36601
 WT_HOMEDIR: /opt/wagtail
 WT_GROUPS: "www-data"
-WT_PASSWD: brn521
+WT_PASSWD: wagtail
