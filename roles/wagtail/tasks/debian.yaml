@@ -41,3 +41,58 @@
   shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && pip install -r requirements.txt"
   register: result_install_dependencies
   changed_when: result_install_dependencies.stdout.find('Requirement already satisfied') == -1
+
+- name: copy patches
+  template: >
+    src="templates/{{ item }}"
+    dest="{{WT_HOME}}/{{PROJ_NAME}}/wagtaildemo/settings/{{ item }}"
+    owner="{{WT_USER}}"
+    group="{{WT_GROUP}}"
+    mode=0644
+  with_items:
+    - "base.py.patch"
+    - "production.py.patch"
+
+- name: apply patches
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}}/wagtaildemo/settings && patch < base.py.patch && patch < production.py.patch"
+  register: result_patch_settings
+  changed_when: result_patch_settings.stdout.find('Skipping patch') == -1
+  failed_when: result_patch_settings.rc != 0 and result_patch_settings.stdout.find('Skipping patch') == -1
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: create data structure
+  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=migrate
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: load initial data
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && ./manage.py  load_initial_data"
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: create superuser
+  shell: cd {{WT_HOME}}/{{PROJ_NAME}} && echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{WT_USER}}', 'WT_USER@example.com', '{{WT_PASSWD}}')" | ./manage.py shell
+  register: result_create_superuser
+  changed_when: "result_create_superuser.stderr.find('already exists') == -1"
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: collect static
+  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=collectstatic
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- set_fact:
+    WT_WWWGROUP: www-data
+
+
+- name: configure uwsgi
+  template: src=templates/uwsgi.ini dest=/etc/uwsgi/apps-available/{{PROJ_NAME}}.ini
+    owner=root group=root mode=0644
+
+- name: create symlink to uwsgi app-enabled
+  file: src=/etc/uwsgi/apps-available/{{PROJ_NAME}}.ini dest=/etc/uwsgi/apps-enabled/{{PROJ_NAME}}.ini
+    state=link
+  notify:
+    - restart uwsgi

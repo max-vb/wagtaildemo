@@ -21,3 +21,6 @@
 
 - name: define PG_DATA
   set_fact: PG_DATA=/var/lib/postgresql/9.5/main
+
+- set_fact:
+    PG_CONF: /etc/postgresql/9.5/main

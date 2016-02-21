@@ -1,0 +1,25 @@
+--- base.py       2016-02-21 12:57:26.499000001 -0500
++++ base.py.patch 2016-02-21 12:52:55.024000001 -0500
+@@ -20,6 +20,11 @@
+     'default': {
+         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+         'NAME': '{{PROJ_NAME}}',
++       'USER': '{{WT_USER}}',
++       'PASSWORD': '{{WT_PASSWD}}',
++       'HOST': '{{IP_PG_HOST}}',
++       'PORT': '',
++
+     }
+ }
+
+@@ -213,5 +218,10 @@
+
+
+ # WAGTAIL SETTINGS
++try:
++        from .production import *
++except ImportError:
++        pass
++
+
+ WAGTAIL_SITE_NAME = 'wagtaildemo'

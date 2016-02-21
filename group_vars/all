@@ -6,3 +6,9 @@ WT_GID: 36601
 WT_HOME: /opt/wagtail
 WT_GROUPS: "www-data"
 WT_PASSWD: wagtail
+
+# get ip addresses
+IP_PG_HOST: "{{ hostvars[groups['postgres'][0]]['ansible_all_ipv4_addresses'][0] }}"
+IP_WT_HOST: "{{ hostvars[groups['wagtail-fe'][0]]['ansible_all_ipv4_addresses'][0] }}"
+IP_ES_HOST: "{{ hostvars[groups['es'][0]]['ansible_all_ipv4_addresses'][0] }}"
+IP_REDIS_HOST: "{{ hostvars[groups['redis-cache'][0]]['ansible_all_ipv4_addresses'][0] }}"

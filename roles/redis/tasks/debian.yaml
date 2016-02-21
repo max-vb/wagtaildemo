@@ -12,5 +12,12 @@
   notify:
     - restart redis
 
+- name: set password
+  lineinfile: >
+    dest=/etc/redis/redis.conf
+    line="requirepass {{WT_PASSWD}}"
+  notify:
+    - restart redis
+
 - name: start redis service
   service: name=redis-server state=started enabled=yes

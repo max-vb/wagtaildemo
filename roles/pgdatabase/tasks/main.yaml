@@ -9,7 +9,7 @@
 - name: configure host base access
   template: >
     src=templates/pg_hba.conf.j2
-    dest={{PG_DATA}}/pg_hba.conf
+    dest={{PG_CONF}}/pg_hba.conf
     owner=postgres
     group=postgres
     mode=0640
@@ -17,7 +17,7 @@
 - name: configure postgresql server parameters
   template: >
     src=templates/postgresql.conf.j2
-    dest={{PG_DATA}}/postgresql.conf
+    dest={{PG_CONF}}/postgresql.conf
     owner=postgres
     group=postgres
     mode=0640

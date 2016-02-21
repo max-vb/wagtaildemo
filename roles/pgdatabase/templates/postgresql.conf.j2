@@ -6,7 +6,7 @@ ident_file = '{{PG_DATA}}/pg_ident.conf'
 # CONNECTIONS AND AUTHENTICATION
 #------------------------------------------------------------------------------
 
-listen_addresses = '*'
+listen_addresses = '{{ansible_all_ipv4_addresses[0]}}'
 port = 5432
 max_connections = 100
 superuser_reserved_connections = 5
