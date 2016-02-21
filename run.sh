@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ansible-playbook -i hosts site.yaml
+ansible-playbook -i hosts site.yaml --tags nginx

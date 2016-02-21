@@ -1,4 +1,5 @@
 PROJ_NAME: wagtaildemo
+PROJ_FQDN: wagtaildemo.labs.localnet
 WT_USER: wagtail
 WT_UID: 36601
 WT_GROUP: wagtail
@@ -6,6 +7,7 @@ WT_GID: 36601
 WT_HOME: /opt/wagtail
 WT_GROUPS: "www-data"
 WT_PASSWD: wagtail
+
 
 # get ip addresses
 IP_PG_HOST: "{{ hostvars[groups['postgres'][0]]['ansible_all_ipv4_addresses'][0] }}"

@@ -1,0 +1,21 @@
+- name: remove apache2 if exists
+  apt: name=apache2 state=absent
+
+- name: install nginx
+  apt: name=nginx-full state=present
+
+- name: configure nginx as revers proxy
+  template: >
+    src=templates/wagtail.conf.j2
+    dest="/etc/nginx/sites-available/{{PROJ_FQDN}}.conf"
+    owner=root
+    group=root
+    mode=0644
+
+- name: create symlink to site-enabled
+  file: >
+    src="/etc/nginx/sites-available/{{PROJ_FQDN}}.conf"
+    dest="/etc/nginx/sites-enabled/{{PROJ_FQDN}}.conf"
+    state=link
+  notify:
+    - restart nginx
