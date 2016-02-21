@@ -1,0 +1,11 @@
+cluster.name: {{PROJ_NAME}}
+node.name: {{ansible_nodename}}
+node.master: true
+node.data: true
+node.rack: rack1
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+bootstrap.mlockall: false
+network.bind_host: "{{ansible_all_ipv4_addresses[0]}}"
+transport.tcp.port: 9300
+http.port: 9200

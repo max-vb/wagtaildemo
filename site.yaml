@@ -10,3 +10,7 @@
 - hosts: redis-cache
   roles:
   - redis
+
+- hosts: es
+  roles:
+  - es

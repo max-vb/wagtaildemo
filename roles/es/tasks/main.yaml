@@ -1,0 +1,17 @@
+- name: check os version Debian
+  include: debian.yaml
+  when: ansible_os_family == "Debian" and ansible_distribution_major_version|int == 8
+
+- name: check os version RedHat
+  include: rhel.yaml
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
+
+- name: configure es
+  template: >
+    src=templates/elasticsearch.yaml.j2
+    dest=/etc/elasticsearch/elasticsearch.yaml
+    owner=elasticsearch
+    group=elasticsearch
+    mode=0640
+  notify:
+    - restart es

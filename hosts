@@ -2,3 +2,5 @@
 pgdb01 ansible_host=192.168.122.41 ansible_port=22
 [redis-cache]
 pgdb01 ansible_host=192.168.122.41 ansible_port=22
+[es]
+pgdb01 ansible_host=192.168.122.41 ansible_port=22

@@ -1,5 +1,6 @@
 - name: install usefull packages
   apt: name={{ item }} state=present
-  with_items: 
+  with_items:
     - aptitude
     - psmisc
+    - wget
