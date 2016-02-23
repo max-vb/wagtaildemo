@@ -3,3 +3,5 @@
   with_items:
     - uwsgi
     - uwsgi-plugin-python
+  notify:
+    - stop uwsgi

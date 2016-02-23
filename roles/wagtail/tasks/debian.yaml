@@ -13,6 +13,7 @@
     - python-pymongo
     - python-psycopg2
     - postgresql-client
+    - python-virtualenv
 
 - name: create wagtail group
   group: "name={{WT_GROUP}} gid={{WT_GID}} state=present"
@@ -38,10 +39,20 @@
   become_user: "{{WT_USER}}"
   ignore_errors: yes
 
+- name: check virtualenv
+  stat: path= {{WT_HOME}}/{{PROJ_NAME}}/venv
+  register: result_check_venv
+
+- name: create python VEnv
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && virtualenv venv"
+  when: not result_check_venv.stat.exists
+
 - name: install dependencies
-  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && for i in $(cat  requirements.txt|egrep -v '^$|^#'); do pip install $i; done"
+  shell: "bash && cd {{WT_HOME}}/{{PROJ_NAME}} && source ./venv/bin/activate && for i in $(cat  requirements.txt|egrep -v '^$|^#'); do pip install $i; done"
   register: result_install_dependencies
   changed_when: result_install_dependencies.stdout.find('Requirement already satisfied') == -1
+  become: yes
+  become_user: "{{WT_USER}}"
 
 - name: copy patches
   template: >
@@ -63,37 +74,34 @@
   become_user: "{{WT_USER}}"
 
 - name: create data structure
-  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=migrate
+  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=migrate virtualenv={{WT_HOME}}/{{PROJ_NAME}}/venv
   become: yes
   become_user: "{{WT_USER}}"
 
 - name: load initial data
-  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && ./manage.py  load_initial_data"
+  django_manage: "app_path={{WT_HOME}}/{{PROJ_NAME}} command=load_initial_data virtualenv={{WT_HOME}}/{{PROJ_NAME}}/venv"
   become: yes
   become_user: "{{WT_USER}}"
 
 - name: create superuser
-  shell: cd {{WT_HOME}}/{{PROJ_NAME}} && echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{WT_USER}}', 'WT_USER@example.com', '{{WT_PASSWD}}')" | ./manage.py shell
+  shell: cd {{WT_HOME}}/{{PROJ_NAME}} && source ./venv/bin/activate && echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{WT_USER}}', 'WT_USER@example.com', '{{WT_PASSWD}}')" | ./manage.py shell
   register: result_create_superuser
   changed_when: "result_create_superuser.stderr.find('already exists') == -1"
   become: yes
   become_user: "{{WT_USER}}"
 
 - name: collect static
-  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=collectstatic
+  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=collectstatic virtualenv={{WT_HOME}}/{{PROJ_NAME}}/venv
   become: yes
   become_user: "{{WT_USER}}"
 
-
-- set_fact:
-    WT_WWWGROUP: www-data
-
 - name: configure uwsgi
-  template: src=templates/uwsgi.ini dest=/etc/uwsgi/apps-available/{{PROJ_NAME}}.ini
+  template: src=templates/uwsgi.ini dest={{WT_HOME}}/{{PROJ_NAME}}/uwsgi.ini
     owner=root group=root mode=0644
 
-- name: create symlink to uwsgi app-enabled
-  file: src=/etc/uwsgi/apps-available/{{PROJ_NAME}}.ini dest=/etc/uwsgi/apps-enabled/{{PROJ_NAME}}.ini
-    state=link
-  notify:
-    - restart uwsgi
+- name: create uwsgi service
+  template: src=templates/uwsgi.service dest=/lib/systemd/system/uwsgi_{{PROJ_NAME}}.service
+    owner=root group=root
+
+- name: start uwsgi service
+  service: name=uwsgi_{{PROJ_NAME}} state=started enabled=yes

@@ -3,6 +3,8 @@
   with_items:
     - uwsgi
     - uwsgi-plugin-python
+  notify:
+    - stop uwsgi
 
 - name: configure firewalld
   firewalld: port=9090/tcp state=enabled permanent=true immediate=yes

@@ -27,6 +27,8 @@
   roles:
     - uwsgi
     - wagtail
+  tags:
+    - wagtail
 
 - hosts: nginx
   roles:
