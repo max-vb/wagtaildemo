@@ -39,7 +39,7 @@
     group=postgres
     mode=0640
   notify:
-    - restart database-deb
+    - restart postgresql-deb
     - create wagtail database
     - create wagtail user
 

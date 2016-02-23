@@ -53,12 +53,18 @@
   shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && virtualenv venv"
   when: not result_check_venv.stat.exists
 
+- name: copy install_wt_deps
+  template: >
+    src=templates/install_wt_deps.sh
+    dest=/tmp/install_wt_deps.sh
+    owner=root
+    group=root
+    mode=0755
+
 - name: install dependencies
-  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && source ./venv/bin/activate && for i in $(cat  requirements.txt|egrep -v '^$|^#'); do pip install $i; done"
+  shell: /tmp/install_wt_deps.sh removes={{WT_HOME}}/{{PROJ_NAME}}/requirements.txt executable=/bin/bash
   register: result_install_dependencies
   changed_when: result_install_dependencies.stdout.find('Requirement already satisfied') == -1
-  become: yes
-  become_user: "{{WT_USER}}"
 
 - name: copy patches
   template: >
@@ -89,8 +95,12 @@
   become: yes
   become_user: "{{WT_USER}}"
 
+- name: copy create_superuser script
+  template: src=templates/django_create_su.sh dest=/tmp/django_create_su.sh
+    owner=root group=root mode=0755
+
 - name: create superuser
-  shell: cd {{WT_HOME}}/{{PROJ_NAME}} && source ./venv/bin/activate && echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{WT_USER}}', 'WT_USER@example.com', '{{WT_PASSWD}}')" | ./manage.py shell
+  shell: /tmp/django_create_su.sh removes=/tmp/django_create_su.sh
   register: result_create_superuser
   changed_when: "result_create_superuser.stderr.find('already exists') == -1"
   become: yes
@@ -104,6 +114,9 @@
 - name: configure uwsgi
   template: src=templates/uwsgi.ini dest={{WT_HOME}}/{{PROJ_NAME}}/uwsgi.ini
     owner=root group=root mode=0644
+
+- set_fact:
+    WSGI_PATH=/usr/sbin/uwsgi
 
 - name: create uwsgi service
   template: src=templates/uwsgi.service dest=/lib/systemd/system/uwsgi_{{PROJ_NAME}}.service
