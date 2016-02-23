@@ -20,4 +20,4 @@ WT_GROUP - primary os group for WT_USER'
 WT_HOME - path to wagtaildemo installation. (RHEL7 support selinux=Enforcing mode);
 WT_PASSWD - password for wagtail user;
 PROJ_NAME - project name e.g: wagtaildemo;
-PROJ_FQDN - project fqdn e.g: wagtaildemo.labs.localnet.
+PROJ_FQDN - project fqdn e.g: wagtaildemo.labs.localnet.P

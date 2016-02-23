@@ -1,0 +1,18 @@
+[Unit]
+Description=uWSGI {{PROJ_NAME}}
+After=syslog.target
+
+[Service]
+EnvironmentFile=-{{WT_HOME}}/{{PROJ_NAME}}/uwsgi.env
+ExecStartPre=/bin/mkdir -p /run/uwsgi_{{PROJ_NAME}}
+ExecStartPre=/bin/chown {{WT_USER}}:{{WT_GROUP}} /run/uwsgi_{{PROJ_NAME}}
+ExecStart={{WSGI_PATH}} --ini {{WT_HOME}}/{{PROJ_NAME}}/uwsgi.ini
+ExecReload=/bin/kill -HUP $MAINPID
+KillSignal=SIGINT
+Restart=always
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
