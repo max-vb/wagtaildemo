@@ -1,2 +1,2 @@
 - name: stop uwsgi
-  service: name=uwsgi state=stoped enabled=no
+  service: name=uwsgi state=stopped enabled=no
