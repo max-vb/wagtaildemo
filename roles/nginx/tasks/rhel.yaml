@@ -17,3 +17,6 @@
     mode=0644
   notify:
     - restart nginx
+
+- name: setsebool httpd_can_network_connect on
+  seboolean: name=httpd_can_network_connect persistent=yes state=yes
