@@ -1,10 +1,10 @@
 [postgres]
-pgdb01 ansible_host=192.168.122.41 ansible_port=22
+pgdb01 ansible_host=192.168.122.46 ansible_port=22
 [redis-cache]
-pgdb01 ansible_host=192.168.122.41 ansible_port=22
+pgdb01 ansible_host=192.168.122.46 ansible_port=22
 [es]
-pgdb01 ansible_host=192.168.122.41 ansible_port=22
+pgdb01 ansible_host=192.168.122.46 ansible_port=22
 [wagtail-fe]
-pgdb01 ansible_host=192.168.122.41 ansible_port=22
+pgdb01 ansible_host=192.168.122.46 ansible_port=22
 [nginx]
-pgdb01 ansible_host=192.168.122.41 ansible_port=22
+pgdb01 ansible_host=192.168.122.46 ansible_port=22

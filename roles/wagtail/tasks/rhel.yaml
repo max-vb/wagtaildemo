@@ -1,1 +1,97 @@
-- debug: msg="not yet define"
+- name: install prerequest packages
+  yum: name={{item}} state=present
+  with_items:
+    - python-pip
+    - python-devel
+    - "@Development Tools"
+    - libtool
+    - zlib-devel
+    - libjpeg-devel
+    - postgresql-devel
+    - git
+    - python-pymongo
+    - python-pymongo-gridfs
+    - python-psycopg2
+    - postgresql
+    - patch
+
+- set_fact: WT_GROUPS=uwsgi
+- set_fact:
+    WT_WWWGROUP: nginx
+
+
+- name: create wagtail group
+  group: "name={{WT_GROUP}} gid={{WT_GID}} state=present"
+
+- name: create wagtail user
+  user: >
+    name="{{WT_USER}}"
+    uid="{{WT_UID}}"
+    group="{{WT_GROUP}}"
+    groups="{{WT_GROUPS}}"
+    home="{{WT_HOME}}"
+    state=present
+    shell=/bin/bash
+
+- name: clone wagtaildemo
+  git: >
+    repo=https://github.com/torchbox/wagtaildemo
+    clone=yes
+    dest="{{WT_HOME}}/{{PROJ_NAME}}"
+    force=no
+  register: result_clone_wagtaildemo
+  become: yes
+  become_user: "{{WT_USER}}"
+  ignore_errors: yes
+
+- name: install dependencies
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && for i in $(cat  requirements.txt|egrep -v '^$|^#'); do pip install $i; done"
+  register: result_install_dependencies
+  changed_when: result_install_dependencies.stdout.find('Requirement already satisfied') == -1
+
+- name: copy patches
+  template: >
+    src="templates/{{ item }}"
+    dest="{{WT_HOME}}/{{PROJ_NAME}}/wagtaildemo/settings/{{ item }}"
+    owner="{{WT_USER}}"
+    group="{{WT_GROUP}}"
+    mode=0644
+  with_items:
+    - "base.py.patch"
+    - "production.py.patch"
+
+- name: apply patches
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}}/wagtaildemo/settings && patch < base.py.patch && patch < production.py.patch"
+  register: result_patch_settings
+  changed_when: result_patch_settings.stdout.find('Skipping patch') == -1
+  failed_when: result_patch_settings.rc != 0 and result_patch_settings.stdout.find('Skipping patch') == -1
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: create data structure
+  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=migrate
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: load initial data
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && ./manage.py  load_initial_data"
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: create superuser
+  shell: cd {{WT_HOME}}/{{PROJ_NAME}} && echo "from django.contrib.auth.models import User; User.objects.create_superuser('{{WT_USER}}', 'WT_USER@example.com', '{{WT_PASSWD}}')" | ./manage.py shell
+  register: result_create_superuser
+  changed_when: "result_create_superuser.stderr.find('already exists') == -1"
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: collect static
+  django_manage: app_path={{WT_HOME}}/{{PROJ_NAME}} command=collectstatic
+  become: yes
+  become_user: "{{WT_USER}}"
+
+- name: configure uwsgi
+  template: src=templates/uwsgi.ini dest=/etc/uwsgi.d/{{PROJ_NAME}}.ini
+    owner=root group=root mode=0644
+  notify:
+    - restart uwsgi

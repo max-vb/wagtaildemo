@@ -1,1 +1,60 @@
-- debug: msg="not yet define"
+- name: enable external postgres repository
+  yum: >
+    name=https://download.postgresql.org/pub/repos/yum/9.5/redhat/rhel-7-x86_64/pgdg-centos95-9.5-2.noarch.rpm
+    state=present
+
+- name: configure firewalld
+  firewalld: port=5432/tcp state=enabled permanent=true immediate=yes
+  ignore_errors: true
+
+- name: install postgresql database
+  yum: name={{ item }} state=present
+  with_items:
+    - postgresql95
+    - postgresql95-server
+    - python-psycopg2
+
+- set_fact:
+    PG_DATA: "/var/lib/pgsql/{{PG_VERSION}}/data"
+
+- set_fact:
+    PG_CONF: "/var/lib/pgsql/{{PG_VERSION}}/data"
+
+- name: check installed databases
+  stat: path=/var/lib/pgsql/{{PG_VERSION}}/data/global/pg_control
+  register: result_check_pg_controlfile
+
+- name: create database cluster
+  shell: initdb -D /var/lib/pgsql/{{PG_VERSION}}/data
+  environment:
+    PATH: /usr/pgsql-9.5/bin:/usr/bin:/usr/sbin:/usr/local/bin
+  when: not result_check_pg_controlfile.stat.exists
+  become: yes
+  become_user: postgres
+
+- name: configure host base access
+  template: >
+    src=templates/pg_hba.conf.j2
+    dest={{PG_CONF}}/pg_hba.conf
+    owner=postgres
+    group=postgres
+    mode=0640
+
+- name: configure postgresql server parameters
+  template: >
+    src=templates/postgresql.conf.j2
+    dest={{PG_CONF}}/postgresql.conf
+    owner=postgres
+    group=postgres
+    mode=0640
+  notify:
+    - restart database-rhel
+    - create wagtail database
+    - create wagtail user
+
+
+- name: restart postgresql
+  service: name=postgresql-9.5 state=started enabled=yes
+  notify:
+    - create wagtail database
+    - create wagtail user

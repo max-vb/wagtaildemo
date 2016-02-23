@@ -1,1 +1,9 @@
-- debug: msg="not yet define"
+- name: install uwsgi
+  yum: name={{ item }} state=present
+  with_items:
+    - uwsgi
+    - uwsgi-plugin-python
+
+- name: configure firewalld
+  firewalld: port=9090/tcp state=enabled permanent=true immediate=yes
+  ignore_errors: true

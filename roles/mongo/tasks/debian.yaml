@@ -1,2 +1,12 @@
 # - name: install mongodb
 #
+pip install django-storagespip install django-storages
+
+use wagtail
+db.createUser(
+  {
+    user: "wagtail",
+    pwd: "wagtail",
+    roles: [ { role: "userAdmin", db: "wagtail" } ]
+  }
+)

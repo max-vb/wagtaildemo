@@ -5,21 +5,3 @@
 - name: check os version RedHat
   include: rhel.yaml
   when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
-
-- name: configure host base access
-  template: >
-    src=templates/pg_hba.conf.j2
-    dest={{PG_CONF}}/pg_hba.conf
-    owner=postgres
-    group=postgres
-    mode=0640
-
-- name: configure postgresql server parameters
-  template: >
-    src=templates/postgresql.conf.j2
-    dest={{PG_CONF}}/postgresql.conf
-    owner=postgres
-    group=postgres
-    mode=0640
-  notify:
-    - restart postgresql

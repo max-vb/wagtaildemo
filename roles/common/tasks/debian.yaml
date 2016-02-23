@@ -1,0 +1,23 @@
+- name: configure locales
+  shell: echo "en_US.UTF-8 UTF-8" > /etc/locale.gen
+  when: ansible_virtualization_type == "openvz"
+
+- name: configure locales
+  shell: DEBIAN_FRONTEND=noninteractive dpkg-reconfigure locales
+  when: ansible_virtualization_type == "openvz"
+
+- name: install usefull packages
+  apt: name={{ item }} state=present
+  with_items:
+    - aptitude
+    - psmisc
+    - wget
+    - locales
+    - sudo
+
+- name: install base repository
+  lineinfile: line={{ item }} dest=/etc/apt/sources.list
+  with_items:
+    - "deb http://cdn.debian.net/debian jessie main contrib non-free"
+    - "deb http://cdn.debian.net/debian jessie-updates main contrib non-free"
+    - "deb http://security.debian.org/ jessie/updates main contrib non-free"

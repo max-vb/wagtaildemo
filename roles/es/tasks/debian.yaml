@@ -1,10 +1,13 @@
 - name: install jdk1.7
   apt: name=openjdk-7-jdk state=latest update_cache=yes
 
-- name: download es 1.7.5
-  get_url: >
-    url="{{ES_DEBURL}}"
-    dest="/tmp/es_1.7.5-noarch.deb"
+# - name: download es 1.7.5
+#   get_url: >
+#     url="{{ES_DEBURL}}"
+#     dest="/tmp/elasticsearch-1.7.5.deb"
+
+- name: copy es-1.7.5
+  copy: src=files/elasticsearch-1.7.5.deb dest=/tmp/elasticsearch-1.7.5.deb
 
 - name: install es 1.7.5
-  apt: deb="/tmp/es_1.7.5-noarch.deb" state=present
+  apt: deb="/tmp/elasticsearch-1.7.5.deb" state=present

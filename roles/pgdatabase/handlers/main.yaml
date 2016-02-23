@@ -1,5 +1,11 @@
-- name: restart postgresql
+- name: restart postgresql-deb
   service: name=postgresql state=restarted enabled=yes
+  when: ansible_os_family == "Debian" and ansible_distribution_major_version|int == 8
+
+- name: restart postgresql-rhel
+  service: name=postgresql state=restarted enabled=yes
+  when: ansible_os_family == "RedHat" and ansible_distribution_major_version|int == 7
+
 
 - name: create wagtail database
   postgresql_db: name={{PROJ_NAME}}

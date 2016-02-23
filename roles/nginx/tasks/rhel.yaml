@@ -1,1 +1,19 @@
-- debug: msg="not yet defined"
+- name: install nginx
+  yum: name=nginx state=present
+
+- name: configure firewalld
+  firewalld: port={{item}}/tcp state=enabled permanent=true immediate=yes
+  with_items:
+    - 80
+    - 443
+  ignore_errors: true
+
+- name: configure nginx as revers proxy
+  template: >
+    src=templates/wagtail.conf.j2
+    dest="/etc/nginx/conf.d/{{PROJ_FQDN}}.conf"
+    owner=root
+    group=root
+    mode=0644
+  notify:
+    - restart nginx

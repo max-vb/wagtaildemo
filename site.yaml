@@ -2,18 +2,26 @@
 - hosts: all
   roles:
     - common
+  tags:
+    - common_tag
 
 - hosts: postgres
   roles:
     - pgdatabase
+  tags:
+    - postgres_tag
 
 - hosts: redis-cache
   roles:
     - redis
+  tags:
+    - redis_tag
 
 - hosts: es
   roles:
     - es
+  tags:
+    - es_tag
 
 - hosts: wagtail-fe
   roles:

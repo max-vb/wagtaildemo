@@ -8,9 +8,11 @@
     - libtool
     - zlib1g-dev
     - libjpeg-dev
-    - postgresql-server-dev-9.5
+    - postgresql-server-dev-all
     - git
     - python-pymongo
+    - python-psycopg2
+    - postgresql-client
 
 - name: create wagtail group
   group: "name={{WT_GROUP}} gid={{WT_GID}} state=present"
@@ -37,7 +39,7 @@
   ignore_errors: yes
 
 - name: install dependencies
-  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && pip install -r requirements.txt"
+  shell: "cd {{WT_HOME}}/{{PROJ_NAME}} && for i in $(cat  requirements.txt|egrep -v '^$|^#'); do pip install $i; done"
   register: result_install_dependencies
   changed_when: result_install_dependencies.stdout.find('Requirement already satisfied') == -1
 
@@ -82,9 +84,9 @@
   become: yes
   become_user: "{{WT_USER}}"
 
+
 - set_fact:
     WT_WWWGROUP: www-data
-
 
 - name: configure uwsgi
   template: src=templates/uwsgi.ini dest=/etc/uwsgi/apps-available/{{PROJ_NAME}}.ini

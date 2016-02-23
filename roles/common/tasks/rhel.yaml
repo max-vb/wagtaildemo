@@ -1,0 +1,7 @@
+- name: install usefull packages
+  yum: name={{ item }} state=present
+  with_items:
+    - psmisc
+    - wget
+    - epel-release
+    - sudo
